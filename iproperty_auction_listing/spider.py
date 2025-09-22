@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 load_dotenv()
 import scrapy
 
+
+
 from data_clean import (
     split_area,
     extract_list_id,
@@ -19,6 +21,13 @@ from data_clean import (
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
 MAX_PAGES = 10
+
+
+# Delete the log file if it exists before starting the spider (overwrite)
+log_file_path = 'iproperty_auction_logs.txt'
+if os.path.exists(log_file_path):
+    os.remove(log_file_path)
+
 
 
 # Request URLs
@@ -175,6 +184,18 @@ class ExampleSpider(scrapy.Spider):
         "RETRY_TIMES": 10,
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418],
         "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+
+        # Logs
+        "LOG_ENABLED": True,
+        "LOG_LEVEL": "DEBUG",
+        "LOG_FILE": log_file_path
+
+
+
+
     }
+
+
+
 
 
