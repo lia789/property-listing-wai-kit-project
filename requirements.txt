@@ -1,0 +1,6 @@
+python-dotenv
+scrapy
+parsel
+requests
+twisted
+pymysql
