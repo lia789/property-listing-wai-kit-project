@@ -72,7 +72,7 @@ class ExampleSpider(scrapy.Spider):
     
 
         pag_headers = {
-            # "x-sapi-render": "true",
+            "x-sapi-render": "true",
             "x-sapi-device_type": "desktop",
             "x-sapi-retry_404": "true",
             "x-sapi-premium": "true",
@@ -82,7 +82,7 @@ class ExampleSpider(scrapy.Spider):
             state = src["state"]
             tpl = src["url_template"]
 
-            for page in range(1, 8):         # Integrate page number here
+            for page in range(1, 11):         # Integrate page number here
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -275,7 +275,7 @@ class ExampleSpider(scrapy.Spider):
 
         # Logs
         "LOG_ENABLED": True,
-        "LOG_LEVEL": "INFO",
+        "LOG_LEVEL": "DEBUG",
         "LOG_FILE": log_file_path, 
     }
 

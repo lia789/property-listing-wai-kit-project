@@ -71,7 +71,7 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 8):
+            for page in range(1, 11):
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
