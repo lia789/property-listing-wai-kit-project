@@ -18,7 +18,7 @@ MYSQL_DB = os.getenv("MYSQL_DB", "property_listing")
 MYSQL_CHARSET = "utf8mb4"
 
 
-TABLE_NAME = "iproperty_latest_listing"
+TABLE_NAME = "iproperty-new-listing"
 
 # Batch behavior
 BATCH_SIZE = 50

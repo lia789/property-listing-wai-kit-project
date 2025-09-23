@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 from dotenv import load_dotenv
 load_dotenv()
 import scrapy
-
+import time
 
 from data_clean import (
     split_area, extract_list_id, get_condo_name, extract_lat_long_from_url,
@@ -17,7 +17,7 @@ from data_clean import (
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 WEBSITE_NAME = "iproperty.com"
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
-# MAX_PAGES = 10
+
 
 
 # Delete the log file if it exists before starting the spider (overwrite)
@@ -71,7 +71,8 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 11):
+            for page in range(1, 8):
+                time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
                     url,
@@ -265,9 +266,9 @@ class ExampleSpider(scrapy.Spider):
     # ---- Scrapy settings kept simple; DB pipeline is in db_pipeline.py ----
     custom_settings = {
         # Throughput
-        "CONCURRENT_REQUESTS": 50,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 50,
-        "DOWNLOAD_TIMEOUT": 100,
+        "CONCURRENT_REQUESTS": 20,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
+        "DOWNLOAD_TIMEOUT": 150,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)
         "RETRY_ENABLED": True,
@@ -279,7 +280,7 @@ class ExampleSpider(scrapy.Spider):
 
         # Logs
         "LOG_ENABLED": True,
-        "LOG_LEVEL": "INFO",
+        "LOG_LEVEL": "DEBUG",
         "LOG_FILE": log_file_path, 
     }
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 import scrapy
-
+import time
 
 
 from data_clean import (
@@ -20,7 +20,7 @@ from data_clean import (
 # Settings
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
-MAX_PAGES = 5
+# MAX_PAGES = 5
 
 
 # Delete the log file if it exists before starting the spider (overwrite)
@@ -74,30 +74,30 @@ class ExampleSpider(scrapy.Spider):
         for src in START_SOURCES:
             state = src["state"]
             tpl = src["url_template"]
-            page = 1
-            url = tpl.format(page=page)
-            yield scrapy.Request(
-                url,
-                headers=pag_headers,
-                meta={
-                    "proxy": PROXY_URL,
-                    "state": state,
-                    "page": page,
-                    "url_template": tpl,
-                },
-                callback=self.parse_pagination,
-                dont_filter=True,
-            )
+
+
+
+            for page in range(1, 5):
+                url = tpl.format(page=page)
+                time.sleep(0.1)
+
+                yield scrapy.Request(
+                    url,
+                    headers=pag_headers,
+                    meta={
+                        "proxy": PROXY_URL,
+                        "state": state,
+                        "page": page,
+                        "url_template": tpl,
+                    },
+                    callback=self.parse_pagination,
+                    dont_filter=True,
+                )
 
 
 
     def parse_pagination(self, response: scrapy.http.Response):
         state = response.meta.get("state")
-        page = int(response.meta.get("page", 1))
-        tpl = response.meta.get("url_template")
-
-        
-        found_yesterday = False
 
 
         # Data extraction xpath
@@ -118,24 +118,15 @@ class ExampleSpider(scrapy.Spider):
             extract_property_row_string = li.xpath(".//p[contains(@class, 'ListingAttributesstyle__ListingAttrsDescriptionItemWrapper-cCDpp') and contains(text(), 'Built-up')]/text()").get()
             property_type, built_up_size, furnished_status = extract_property_row(extract_property_row_string)
             data_scraping_date = datetime.now().strftime("%Y-%m-%d")
-
-
-            # Raw posted text for stop condition
-            # raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
-            # if raw_posted and "yesterday" in raw_posted.lower():
-            #     found_yesterday = True
-            
             posted_date = clean_posted_date(posted_date_raw)
 
-
-            
 
             item_dic = {
                 "list_id": list_id,
                 "name": name,
                 "url": url,
                 "area": area,
-                "state": response.meta.get("state"),
+                "state": state,
                 "price": price,
                 "bed_rooms": bed_rooms,
                 "built_up_size": built_up_size,
@@ -152,35 +143,12 @@ class ExampleSpider(scrapy.Spider):
 
 
     
-        # ---- Dynamic pagination with cap ----
-        if found_yesterday:
-            self.logger.info(f"[{state}] 'yesterday' found on page {page}; stopping pagination.")
-            return
 
-        if page >= MAX_PAGES:
-            self.logger.info(f"[{state}] Reached MAX_PAGES={MAX_PAGES}; stopping pagination.")
-            return
-
-        next_page = page + 1
-        next_url = tpl.format(page=next_page)
-        self.logger.info(f"[{state}] Scheduling page {next_page} (cap={MAX_PAGES}).")
-        yield scrapy.Request(
-            next_url,
-            headers=response.request.headers,
-            meta={
-                "proxy": PROXY_URL,
-                "state": state,
-                "page": next_page,
-                "url_template": tpl,
-            },
-            callback=self.parse_pagination,
-            dont_filter=True,
-        )
 
     custom_settings = {
-        "CONCURRENT_REQUESTS": 50,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 50,
-        "DOWNLOAD_TIMEOUT": 100,
+        "CONCURRENT_REQUESTS": 10,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 10,
+        "DOWNLOAD_TIMEOUT": 150,
         "RETRY_ENABLED": True,
         "RETRY_TIMES": 10,
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418],

@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 import scrapy
-
+import time
 
 from data_clean import (
     extract_area_state,
@@ -82,7 +82,8 @@ class ExampleSpider(scrapy.Spider):
             state = src["state"]
             tpl = src["url_template"]
 
-            for page in range(1, 11):         # Integrate page number here
+            for page in range(1, 8):         # Integrate page number here
+                time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
                     url,
@@ -259,9 +260,9 @@ class ExampleSpider(scrapy.Spider):
     # ---- Scrapy settings kept simple; DB pipeline is in db_pipeline.py ----
     custom_settings = {
         # Throughput
-        "CONCURRENT_REQUESTS": 50,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 50,
-        "DOWNLOAD_TIMEOUT": 100,
+        "CONCURRENT_REQUESTS": 20,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
+        "DOWNLOAD_TIMEOUT": 150,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)
         "RETRY_ENABLED": True,
