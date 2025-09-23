@@ -20,7 +20,7 @@ from data_clean import (
 # Settings
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
-MAX_PAGES = 10
+MAX_PAGES = 5
 
 
 # Delete the log file if it exists before starting the spider (overwrite)
@@ -114,17 +114,18 @@ class ExampleSpider(scrapy.Spider):
             bed_rooms = clean_bedrooms(li.xpath(".//li[contains(@class, 'bedroom-facility')]/text()").get())
             birth_rooms = li.xpath(".//li[contains(@class, 'bathroom-facility')]/text()").get()
             perking = li.xpath(".//li[contains(@class, 'carPark-facility')]/text()").get()
-            posted_date = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
+            posted_date_raw = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
             extract_property_row_string = li.xpath(".//p[contains(@class, 'ListingAttributesstyle__ListingAttrsDescriptionItemWrapper-cCDpp') and contains(text(), 'Built-up')]/text()").get()
             property_type, built_up_size, furnished_status = extract_property_row(extract_property_row_string)
             data_scraping_date = datetime.now().strftime("%Y-%m-%d")
 
 
             # Raw posted text for stop condition
-            raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
-            if raw_posted and "yesterday" in raw_posted.lower():
-                found_yesterday = True
-            posted_date = clean_posted_date(raw_posted)
+            # raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
+            # if raw_posted and "yesterday" in raw_posted.lower():
+            #     found_yesterday = True
+            
+            posted_date = clean_posted_date(posted_date_raw)
 
 
             

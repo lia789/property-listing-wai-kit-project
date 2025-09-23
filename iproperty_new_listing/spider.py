@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import scrapy
 
+
 from data_clean import (
     split_area, extract_list_id, get_condo_name, extract_lat_long_from_url,
     analyze_description, clean_bedrooms, clean_int_float,
@@ -17,6 +18,12 @@ API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 WEBSITE_NAME = "iproperty.com"
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
 MAX_PAGES = 10
+
+
+# Delete the log file if it exists before starting the spider (overwrite)
+log_file_path = 'iproperty_new_listing_logs.txt'
+if os.path.exists(log_file_path):
+    os.remove(log_file_path)
 
 
 # ---- Add/extend your sources here: each entry has a 'state' and a URL template with {page} ----
@@ -103,9 +110,9 @@ class ExampleSpider(scrapy.Spider):
 
 
             # Raw posted text for stop condition
-            raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
-            if raw_posted and "yesterday" in raw_posted.lower():
-                found_yesterday = True
+            # raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
+            # if raw_posted and "yesterday" in raw_posted.lower():
+            #     found_yesterday = True
             
 
             # Sending listing page request
@@ -304,4 +311,12 @@ class ExampleSpider(scrapy.Spider):
 
         # DB pipeline
         "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+
+        # Logs
+        "LOG_ENABLED": True,
+        "LOG_LEVEL": "INFO",
+        "LOG_FILE": log_file_path, 
     }
+
+
+

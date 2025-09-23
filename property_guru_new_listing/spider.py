@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import scrapy
 
+
 from data_clean import (
     extract_area_state,
     clean_int_float,
@@ -23,6 +24,14 @@ from data_clean import (
 
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
+
+
+
+# Delete the log file if it exists before starting the spider (overwrite)
+log_file_path = 'property_guru_new_listing_logs.txt'
+if os.path.exists(log_file_path):
+    os.remove(log_file_path)
+
 
 
 
@@ -263,7 +272,14 @@ class ExampleSpider(scrapy.Spider):
 
         # DB pipeline
         "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+
+
+        # Logs
+        "LOG_ENABLED": True,
+        "LOG_LEVEL": "INFO",
+        "LOG_FILE": log_file_path, 
     }
+
 
 
 
