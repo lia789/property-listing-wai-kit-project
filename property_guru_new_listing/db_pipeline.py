@@ -22,7 +22,7 @@ TABLE_NAME = "property-guru-new-listing"
 
 
 # Batch behavior
-BATCH_SIZE = 100
+BATCH_SIZE = 50
 FLUSH_SECS = 300
 UPSERT_LAST_WINS = bool(int(os.getenv("UPSERT_LAST_WINS", "0")))  # 0=INSERT IGNORE, 1=UPSERT
 

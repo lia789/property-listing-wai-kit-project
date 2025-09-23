@@ -21,7 +21,7 @@ MYSQL_CHARSET = "utf8mb4"
 TABLE_NAME = "iproperty_latest_listing"
 
 # Batch behavior
-BATCH_SIZE = 100
+BATCH_SIZE = 50
 FLUSH_SECS = 300
 
 UPSERT_LAST_WINS = bool(int(os.getenv("UPSERT_LAST_WINS", "0")))

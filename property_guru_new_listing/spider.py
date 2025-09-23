@@ -70,8 +70,6 @@ class ExampleSpider(scrapy.Spider):
     # Build requests for the first 10 pages for each source/state
     def start_requests(self):
     
-        # Pagination instructions: wait 10s and ensure listing UL is present
-
 
         pag_headers = {
             # "x-sapi-render": "true",

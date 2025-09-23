@@ -17,7 +17,7 @@ from data_clean import (
 API_KEY = str(os.getenv("SCRAPERAPI_KEY", ""))
 WEBSITE_NAME = "iproperty.com"
 PROXY_URL = f"http://scraperapi:{str(API_KEY)}@proxy-server.scraperapi.com:8001"
-MAX_PAGES = 10
+# MAX_PAGES = 10
 
 
 # Delete the log file if it exists before starting the spider (overwrite)
@@ -26,15 +26,17 @@ if os.path.exists(log_file_path):
     os.remove(log_file_path)
 
 
+
+
 # ---- Add/extend your sources here: each entry has a 'state' and a URL template with {page} ----
 START_SOURCES = [
     {
         "state": "Kuala Lumpur",
-        "url_template": "https://www.iproperty.com.my/sale/kuala-lumpur-58jok/apartment-flat/?l1&page{page}",
+        "url_template": "https://www.iproperty.com.my/sale/kuala-lumpur-58jok/apartment-flat/?l1&page={page}",
     },
     {
         "state": "Selangor",
-        "url_template": "https://www.iproperty.com.my/sale/selangor-45nk1/apartment-flat/?l1&page{page}",
+        "url_template": "https://www.iproperty.com.my/sale/selangor-45nk1/apartment-flat/?l1&page={page}",
     },
 
     {
@@ -67,20 +69,22 @@ class ExampleSpider(scrapy.Spider):
         for src in START_SOURCES:
             state = src["state"]
             tpl = src["url_template"]
-            page = 1
-            url = tpl.format(page=page)
-            yield scrapy.Request(
-                url,
-                headers=pag_headers,
-                meta={
-                    "proxy": PROXY_URL,
-                    "state": state,
-                    "page": page,
-                    "url_template": tpl,
-                },
-                callback=self.parse_pagination,
-                dont_filter=True,
-            )
+
+
+            for page in range(1, 11):
+                url = tpl.format(page=page)
+                yield scrapy.Request(
+                    url,
+                    headers=pag_headers,
+                    meta={
+                        "proxy": PROXY_URL,
+                        "state": state,
+                        "page": page,
+                        "url_template": tpl,
+                    },
+                    callback=self.parse_pagination,
+                    dont_filter=True,
+                )
 
 
 
@@ -90,11 +94,6 @@ class ExampleSpider(scrapy.Spider):
     # ---- Pagination page -> enqueue each listing ----
     def parse_pagination(self, response: scrapy.http.Response):
         state = response.meta.get("state")
-        page = int(response.meta.get("page", 1))
-        tpl = response.meta.get("url_template")
-
-        found_yesterday = False
-
 
         li_nodes = response.xpath("//ul[@data-test-id='listing-list']/li")
 
@@ -107,24 +106,15 @@ class ExampleSpider(scrapy.Spider):
             bed_rooms = clean_bedrooms(li.xpath(".//li[@class='ListingAttributesstyle__ListingAttrsFacilitiesItemWrapper-klELeo bvrUdi attributes-facilities-item-wrapper bedroom-facility']/text()").get())
             list_id = extract_list_id(url) if url else None
             
-
-
-            # Raw posted text for stop condition
-            # raw_posted = li.xpath(".//p[contains(text(), 'Posted')]/text()").get()
-            # if raw_posted and "yesterday" in raw_posted.lower():
-            #     found_yesterday = True
-            
-
             # Sending listing page request
             if url:
                 preview = {
                     "list_id": list_id,
                     "url": url,
                     "area": area,
-                    "state": response.meta.get("state"),
+                    "state": state,
                     "price": price,
                     "bed_rooms": bed_rooms,
-                    "website_name": response.meta.get("website_name"),
                 }
 
 
@@ -138,7 +128,7 @@ class ExampleSpider(scrapy.Spider):
                     },
                 ]
                 det_headers = {
-                    # "x-sapi-render": "true",
+                    "x-sapi-render": "true",
                     "x-sapi-instruction_set": json.dumps(det_instr),
                     "x-sapi-device_type": "desktop",
                     "x-sapi-retry_404": "true",
@@ -155,31 +145,6 @@ class ExampleSpider(scrapy.Spider):
                     callback=self.parse_detail,
                 )
 
-
-
-        # ---- Dynamic pagination with cap ----
-        if found_yesterday:
-            self.logger.info(f"[{state}] 'yesterday' found on page {page}; stopping pagination.")
-            return
-
-        if page >= MAX_PAGES:
-            self.logger.info(f"[{state}] Reached MAX_PAGES={MAX_PAGES}; stopping pagination.")
-            return
-
-        next_page = page + 1
-        next_url = tpl.format(page=next_page)
-        yield scrapy.Request(
-            next_url,
-            headers=response.request.headers,
-            meta={
-                "proxy": PROXY_URL,
-                "state": state,
-                "page": next_page,
-                "url_template": tpl,
-            },
-            callback=self.parse_pagination,
-            dont_filter=True,
-        )
 
 
 
@@ -283,7 +248,7 @@ class ExampleSpider(scrapy.Spider):
             "urgent": urgent,
             "agent_name": agent_name,
             "agency_name": agency_name,
-            "website_name": pv.get("website_name"),
+            "website_name": "iproperty.com",
             "data_scraping_date": data_scraping_date,
 
         }
