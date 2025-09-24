@@ -72,7 +72,7 @@ class ExampleSpider(scrapy.Spider):
     
 
         pag_headers = {
-            "x-sapi-render": "true",
+            # "x-sapi-render": "true",
             "x-sapi-device_type": "desktop",
             "x-sapi-retry_404": "true",
             "x-sapi-premium": "true",
