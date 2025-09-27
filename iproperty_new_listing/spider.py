@@ -60,10 +60,11 @@ class ExampleSpider(scrapy.Spider):
     
     def start_requests(self):
         pag_headers = {
-            "x-sapi-render": "true",
+            # "x-sapi-render": "true",
             "x-sapi-device_type": "desktop",
             "x-sapi-retry_404": "true",
-            "x-sapi-premium": "true",
+            # "x-sapi-premium": "true",
+            "x-sapi-ultra_premium": "true",
         }
 
         for src in START_SOURCES:
@@ -71,7 +72,7 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 11):
+            for page in range(1, 2):
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -120,20 +121,12 @@ class ExampleSpider(scrapy.Spider):
 
 
                 # Detail pa"x-sapi-premium": "true",ge: wait for networkidle + static map image
-                det_instr = [
-                    {"type": "wait_for_event", "event": "networkidle", "timeout": 10},
-                    {
-                        "type": "wait_for_selector",
-                        "selector": {"type": "xpath", "value": "//img[contains(@src, 'https://maps.googleapis.com/maps/api/staticmap')]"},
-                        "timeout": 20,
-                    },
-                ]
                 det_headers = {
-                    "x-sapi-render": "true",
-                    "x-sapi-instruction_set": json.dumps(det_instr),
+                    # "x-sapi-render": "true",
+                    # "x-sapi-instruction_set": json.dumps(det_instr),
                     "x-sapi-device_type": "desktop",
                     "x-sapi-retry_404": "true",
-                    "x-sapi-premium": "true",
+                    "x-sapi-ultra_premium": "true",
                 }
 
                 yield scrapy.Request(
@@ -268,15 +261,15 @@ class ExampleSpider(scrapy.Spider):
         # Throughput
         "CONCURRENT_REQUESTS": 20,
         "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
-        "DOWNLOAD_TIMEOUT": 150,
+        "DOWNLOAD_TIMEOUT": 300,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)
         "RETRY_ENABLED": True,
-        "RETRY_TIMES": 10,
+        "RETRY_TIMES": 15,
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418,],
 
         # DB pipeline
-        "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+        # "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
 
         # Logs
         "LOG_ENABLED": True,
