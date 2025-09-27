@@ -65,10 +65,11 @@ class ExampleSpider(scrapy.Spider):
 
     def start_requests(self):
         pag_headers = {
-            "x-sapi-render": "true",
+            # "x-sapi-render": "true",
             "x-sapi-device_type": "desktop",
             "x-sapi-retry_404": "true",
-            "x-sapi-premium": "true",
+            # "x-sapi-premium": "true",
+            "x-sapi-ultra_premium": "true",
         }
 
         for src in START_SOURCES:
@@ -148,7 +149,7 @@ class ExampleSpider(scrapy.Spider):
     custom_settings = {
         "CONCURRENT_REQUESTS": 10,
         "CONCURRENT_REQUESTS_PER_DOMAIN": 10,
-        "DOWNLOAD_TIMEOUT": 150,
+        "DOWNLOAD_TIMEOUT": 300,
         "RETRY_ENABLED": True,
         "RETRY_TIMES": 10,
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418],

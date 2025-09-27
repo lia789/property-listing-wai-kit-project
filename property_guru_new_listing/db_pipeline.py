@@ -62,6 +62,7 @@ COLUMNS: List[str] = [
     "agency_name", 
     "website_name",
     "data_scraping_date",
+    "api_update_status",
 ]
 
 

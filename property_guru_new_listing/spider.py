@@ -75,7 +75,8 @@ class ExampleSpider(scrapy.Spider):
             # "x-sapi-render": "true",
             "x-sapi-device_type": "desktop",
             "x-sapi-retry_404": "true",
-            "x-sapi-premium": "true",
+            # "x-sapi-premium": "true",
+            "x-sapi-ultra_premium": "true",
         }
 
         for src in START_SOURCES:
@@ -245,6 +246,7 @@ class ExampleSpider(scrapy.Spider):
             "agency_name": agency_name,
             "website_name": website_name,
             "data_scraping_date": data_scraping_date,
+            "api_update_status": 0,
 
         }
 
@@ -262,11 +264,11 @@ class ExampleSpider(scrapy.Spider):
         # Throughput
         "CONCURRENT_REQUESTS": 20,
         "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
-        "DOWNLOAD_TIMEOUT": 150,
+        "DOWNLOAD_TIMEOUT": 300,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)
         "RETRY_ENABLED": True,
-        "RETRY_TIMES": 10,
+        "RETRY_TIMES": 15,
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418,],
 
         # DB pipeline
