@@ -244,6 +244,7 @@ class ExampleSpider(scrapy.Spider):
             "agency_name": agency_name,
             "website_name": "iproperty.com",
             "data_scraping_date": data_scraping_date,
+            "data_scraping_date": 0,
 
         }
 
