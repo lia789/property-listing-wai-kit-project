@@ -37,7 +37,9 @@ COLUMNS: List[str] = [
     "posted_date", "tenure", "furnished_status", "property_type", "land_title",
     "property_title_type", "bumi_lot", "built_up_price", "occupancy", "unit_type",
     "lat", "lng", "description", "new_project", "auction", "below_market_value",
-    "urgent", "agent_name", "agency_name", "website_name", "data_scraping_date", "data_scraping_date",
+    "urgent", "agent_name", "agency_name", "website_name", "data_scraping_date",
+
+    "api_update_status", "agent_profile_url", "parking", "bath",
 ]
 
 

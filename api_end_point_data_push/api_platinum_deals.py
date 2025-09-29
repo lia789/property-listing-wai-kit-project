@@ -223,7 +223,7 @@ try:
             "state":           (row["state"] or "").strip(),
             "price":           to_float_or_zero(row["price"]),      # <-- default 0.0 if missing/blank
             "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
-            "no_of_bathroom":  None,  # not in DB
+            "no_of_bathroom":  to_float_or_none(row["bath"]),
             "no_of_carpark":   None,  # not in DB
             "size":            to_float_or_none(row["built_up_size"]),
             "property_tenure": clean_property_tenure(row["tenure"]),
@@ -272,7 +272,7 @@ try:
             "state":           (row["state"] or "").strip(),
             "price":           to_float_or_zero(row["price"]),      # <-- default 0.0 if missing/blank
             "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
-            "no_of_bathroom":  None,
+            "no_of_bathroom":  to_float_or_none(row["bath"]),
             "no_of_carpark":   None,
             "size":            to_float_or_none(row["built_up_size"]),
             "property_tenure": clean_property_tenure(row["tenure"]),

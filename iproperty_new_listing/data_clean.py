@@ -6,6 +6,9 @@ from urllib.parse import urlparse, unquote
 
 
 
+
+
+
 # --- Constants / small utilities ------------------------------------------------
 
 # Sentinel for "Studio" bedrooms (kept to match your earlier scripts)
@@ -177,6 +180,104 @@ def normalize_whitespace(text: Optional[str]) -> Optional[str]:
 
 
 
+def clean_posted_date(text):
+    try:
+        if text is None:
+            return None
+        s = str(text).strip()
+        if not s:
+            return None
+
+        # match like "28 Sep 2025" or "5 September 2023" (optional trailing '.')
+        m = re.search(r'(\d{1,2})\s+([A-Za-z]{3,9}\.?)\s+(\d{4})', s)
+        if not m:
+            return None
+
+        day, mon_raw, year = m.groups()
+        mon = mon_raw.rstrip('.') 
+        mon = mon[:3].title()
+        return f"{int(day)} {mon} {year}"
+    except Exception:
+        return None
+
+
+def clean_tenure(tenure_row):
+    try:
+        if tenure_row is None:
+            return None
+        s = str(tenure_row).strip().strip("'\"")
+        if not s:
+            return None
+
+        # remove 'tenure' with optional colon after it (e.g., "Tenure: Freehold")
+        s = re.sub(r'(?i)\btenure\b\s*:?', '', s)
+
+        # collapse extra spaces and trim quotes again
+        s = re.sub(r'\s+', ' ', s).strip().strip("'\"")
+        return s or None
+    except Exception:
+        return None
+    
+
+def clean_property_type(property_type_row):
+    try:
+        if property_type_row is None:
+            return None
+        s = str(property_type_row).strip().strip("'\"")
+        if not s:
+            return None
+
+        # remove "for sale" (case-insensitive, allow extra spaces)
+        s = re.sub(r'(?i)\bfor\s*sale\b', '', s)
+
+        # normalize spaces & trim quotes again
+        s = re.sub(r'\s+', ' ', s).strip().strip("'\"")
+        return s or None
+    except Exception:
+        return None
+    
+
+def clean_property_title_type(property_title_type_row):
+    """
+    Removes the word 'title' (case-insensitive) from the string.
+    Normalizes spaces and trims surrounding quotes.
+    Returns None on empty/invalid input.
+    """
+    try:
+        if property_title_type_row is None:
+            return None
+        s = str(property_title_type_row).strip().strip("'\"")
+        if not s:
+            return None
+
+        # remove 'title' and any immediate trailing spaces (e.g., "Strata title" -> "Strata")
+        s = re.sub(r'(?i)\btitle\b\s*', '', s)
+
+        # collapse extra spaces & trim quotes again
+        s = re.sub(r'\s+', ' ', s).strip().strip("'\"")
+        return s or None
+    except Exception:
+        return None
+
+
+
+
+def extract_lat_lng_from_script(json_text):
+    try:
+        if json_text is None:
+            return (None, None)
+        m = re.search(
+            r'"lat"\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*"lng"\s*:\s*(-?\d+(?:\.\d+)?)',
+            str(json_text),
+            flags=re.DOTALL
+        )
+        if not m:
+            return (None, None)
+        return float(m.group(1)), float(m.group(2))
+    except Exception:
+        return (None, None)
+
+
 
 
 
@@ -195,4 +296,11 @@ __all__ = [
     "clean_bedrooms",
     "clean_int_float",
     "normalize_whitespace",
+    "clean_posted_date",
+    "clean_tenure",
+    "clean_property_type",
+    "clean_property_title_type",
+    "extract_lat_lng_from_script",
+
+
 ]

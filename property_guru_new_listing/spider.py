@@ -210,9 +210,17 @@ class ExampleSpider(scrapy.Spider):
         agency_name = response.xpath("normalize-space(//div[@da-id='agent-agency-name']/text())").get()
 
 
-        website_name = "propertyguru.com"
+        
         data_scraping_date = datetime.now().strftime("%Y-%m-%d")
 
+
+
+        bath = clean_bedrooms(response.xpath("normalize-space(//div[@da-id='bathroom-amenity']/p/text())").get())
+        agent_profile_url_row = response.xpath("//div[@da-id='agent-name']/../../@href").get()
+        if agent_profile_url_row:
+            agent_profile_url = f"https://www.propertyguru.com.my{agent_profile_url_row}"
+        else:
+            agent_profile_url = None
 
 
 
@@ -244,9 +252,11 @@ class ExampleSpider(scrapy.Spider):
             "urgent": urgent,
             "agent_name": agent_name,
             "agency_name": agency_name,
-            "website_name": website_name,
+            "website_name": "propertyguru.com.my",
             "data_scraping_date": data_scraping_date,
             "api_update_status": 0,
+            "agent_profile_url": agent_profile_url,
+            "bath": bath,
 
         }
 
