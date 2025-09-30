@@ -176,7 +176,7 @@ try:
     # ── Filter by DATE(data_scraping_date) for today's rows; skip already-updated
     iproperty_sql = """
         SELECT
-            list_id, name, url, area, state, price, bed_rooms, built_up_size,
+            list_id, name, url, area, state, price, bed_rooms, bath, built_up_size,
             posted_date, tenure, property_type, lat, lng
         FROM `iproperty-new-listing`
         WHERE DATE(data_scraping_date) = %s
@@ -184,7 +184,7 @@ try:
     """
     property_guru_sql = """
         SELECT
-            list_id, name, url, area, state, price, bed_rooms, built_up_size,
+            list_id, name, url, area, state, price, bed_rooms, bath, built_up_size,
             posted_date, tenure, property_type, lat, lng
         FROM `property-guru-new-listing`
         WHERE DATE(data_scraping_date) = %s
