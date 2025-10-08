@@ -6,7 +6,7 @@ import requests
 import pymysql
 from dotenv import load_dotenv
 from decimal import Decimal
-from datetime import datetime, date
+# from datetime import datetime, date
 
 
 # ── Load environment variables
@@ -64,12 +64,12 @@ def clean_posted_date(text) -> str:
     s = re.sub(r"\bsept\b", "Sep", s, flags=re.I).title()
     for fmt in ("%d %b %Y", "%d %B %Y"):
         try:
-            return datetime.strptime(s, fmt).date().isoformat()
+            return datetime.datetime.strptime(s, fmt).date().isoformat()
         except ValueError:
             pass
 
     # Fallback: today's date
-    return date.today().isoformat()
+    return datetime.datetime.today().date().isoformat()
 
 
 
