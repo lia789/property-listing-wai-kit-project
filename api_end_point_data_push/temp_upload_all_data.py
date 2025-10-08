@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# Daily sender: MySQL -> PropertyLab Platinum Deals API
-# Validation, numeric coercion, URL check, per-table logging, retries, LIVE console counters
-# NOTE: If price is missing/blank -> default to 0.0 (do NOT skip)
-# NOTE: NO DATE FILTER — processes ALL rows with api_update_status NULL/0
-
 import os
 import re
 import time
@@ -12,6 +6,8 @@ import requests
 import pymysql
 from dotenv import load_dotenv
 from decimal import Decimal
+from datetime import datetime, date
+
 
 # ── Load environment variables
 load_dotenv()
@@ -53,6 +49,33 @@ def clean_property_tenure(value):
     if re.search(r'\blease\s*hold\b|leasehold', s, flags=re.IGNORECASE):
         return "Leasehold"
     return None
+
+
+
+
+
+def clean_posted_date(text) -> str:
+    """Convert '24 Sep 2025' → '2025-09-24'. If it fails, return today's date."""
+    s = str(text).strip()
+    s = re.sub(r",", "", s)
+    s = re.sub(r"(\d{1,2})(st|nd|rd|th)\b", r"\1", s, flags=re.I)
+    s = re.sub(r"[-/]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\bsept\b", "Sep", s, flags=re.I).title()
+    for fmt in ("%d %b %Y", "%d %B %Y"):
+        try:
+            return datetime.strptime(s, fmt).date().isoformat()
+        except ValueError:
+            pass
+
+    # Fallback: today's date
+    return date.today().isoformat()
+
+
+
+
+
+
 
 # ── Normalize property_type to allowed set (default condo)
 def normalize_property_type(value):
@@ -211,16 +234,19 @@ try:
         payload = {
             "property_name":   name,
             "listing_url":     (row["url"] or "").strip(),
+            "listing_date":    clean_posted_date(row["posted_date"]),
             "area":            (row["area"] or "").strip(),
             "state":           (row["state"] or "").strip(),
             "price":           to_float_or_zero(row["price"]),      # default 0.0 if missing/blank
             "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
             "no_of_bathroom":  to_float_or_none(row["bath"]),
+
             "no_of_carpark":   None,  # not in DB
+
+
             "size":            to_float_or_none(row["built_up_size"]),
             "property_tenure": clean_property_tenure(row["tenure"]),
             "property_type":   normalize_property_type(row["property_type"]),
-            # STANDARD mapping: lng -> longitude, lat -> latitude
             "longitude":       to_float_or_none(row["lng"]),
             "latitude":        to_float_or_none(row["lat"]),
             "type":            "subsale"
@@ -261,6 +287,7 @@ try:
             "property_name":   name,
             "listing_url":     (row["url"] or "").strip(),
             "area":            (row["area"] or "").strip(),
+            "listing_date":    clean_posted_date(row["posted_date"]),
             "state":           (row["state"] or "").strip(),
             "price":           to_float_or_zero(row["price"]),      # default 0.0 if missing/blank
             "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
