@@ -38,20 +38,20 @@ if os.path.exists(log_file_path):
 START_SOURCES = [
     {
         "state": "Kuala Lumpur",
-        "url_template": "https://www.iproperty.com.my/sale/kuala-lumpur-58jok/apartment-flat/?l1&page={page}",
+        "url_template": "https://www.iproperty.com.my/sale/kuala-lumpur-58jok/apartment-flat/?sortBy=posted-desc&l1&page={page}",
     },
     {
         "state": "Selangor",
-        "url_template": "https://www.iproperty.com.my/sale/selangor-45nk1/apartment-flat/?l1&page={page}",
+        "url_template": "https://www.iproperty.com.my/sale/selangor-45nk1/apartment-flat/?sortBy=posted-desc&l1&page={page}",
     },
 
     {
         "state": "Johor",
-        "url_template": "https://www.iproperty.com.my/sale/johor-2hh35/apartment-flat/?l1&page={page}",
+        "url_template": "https://www.iproperty.com.my/sale/johor-2hh35/apartment-flat/?sortBy=posted-desc&l1&page={page}",
     },
     {
         "state": "Penang",
-        "url_template": "https://www.iproperty.com.my/sale/penang-5qvq6/apartment-flat/?l1&page={page}",
+        "url_template": "https://www.iproperty.com.my/sale/penang-5qvq6/apartment-flat/?sortBy=posted-desc&l1&page={page}",
     },    
 ]
 
@@ -78,7 +78,7 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 11):
+            for page in range(1, 8):
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
