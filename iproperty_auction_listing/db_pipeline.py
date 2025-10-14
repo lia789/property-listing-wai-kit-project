@@ -18,38 +18,28 @@ MYSQL_DB = os.getenv("MYSQL_DB", "property_listing")
 MYSQL_CHARSET = "utf8mb4"
 
 
-
-# Target table (you can override from .env if you want)
-TABLE_NAME = "iproperty-auction-listing"
+TABLE_NAME = "iproperty-new-listing"
 
 # Batch behavior
-BATCH_SIZE = 20
-FLUSH_SECS = 200
-UPSERT_LAST_WINS = bool(int(os.getenv("UPSERT_LAST_WINS", "0")))  # 0=INSERT IGNORE, 1=UPSERT
+BATCH_SIZE = 50
+FLUSH_SECS = 300
+
+UPSERT_LAST_WINS = bool(int(os.getenv("UPSERT_LAST_WINS", "0")))
 
 # DB thread pool sizing
 POOL_MIN = 2
 POOL_MAX = 10
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 
 
 COLUMNS: List[str] = [
-    "list_id",
-    "name",
-    "url",
-    "area",
-    "state",
-    "price",
-    "bed_rooms",
-    "built_up_size",
-    "posted_date",
-    "birth_room",
-    "perking",
-    "property_type",
-    "furnished_status",
-    "data_scraping_date"
+    "list_id", "name", "url", "area", "state", "price", "bed_rooms", "built_up_size",
+    "posted_date", "tenure", "furnished_status", "property_type", "land_title",
+    "property_title_type", "bumi_lot", "built_up_price", "occupancy", "unit_type",
+    "lat", "lng", "description", "new_project", "auction", "below_market_value",
+    "urgent", "agent_name", "agency_name", "website_name", "data_scraping_date",
+
+    "api_update_status", "agent_profile_url", "parking", "bath", "auction_date"
 ]
 
 
