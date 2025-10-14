@@ -18,11 +18,11 @@ MYSQL_DB = os.getenv("MYSQL_DB", "property_listing")
 MYSQL_CHARSET = "utf8mb4"
 
 
-TABLE_NAME = "iproperty-new-listing"
+TABLE_NAME = "iproperty-auction-listing"
 
 # Batch behavior
-BATCH_SIZE = 50
-FLUSH_SECS = 300
+BATCH_SIZE = 20
+FLUSH_SECS = 200
 
 UPSERT_LAST_WINS = bool(int(os.getenv("UPSERT_LAST_WINS", "0")))
 
