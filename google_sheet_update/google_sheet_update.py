@@ -199,6 +199,8 @@ def main():
         log.exception("Failed to authenticate with Google Sheets API")
         sys.exit(1)
 
+
+
     # Process each table/sheet
     for table, sheet_name in TABLES.items():
         log.info(f"--- Processing table '{table}' -> sheet '{sheet_name}' ---")
@@ -214,6 +216,8 @@ def main():
             log.exception(f"Error reading headers from sheet '{sheet_name}'")
             continue
 
+
+
         # Find list_id column from headers
         list_id_col_idx = find_list_id_col_index(headers)
         log.info(f"Detected 'list_id' column at index {list_id_col_idx} (A=0).")
@@ -225,6 +229,7 @@ def main():
         except HttpError:
             log.exception(f"Failed to read existing list IDs from sheet '{sheet_name}'.")
             continue
+
 
         # Query rows for Dhaka 'today' using DATE() filter
         rows = []

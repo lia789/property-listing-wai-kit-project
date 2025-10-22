@@ -78,7 +78,7 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 8):
+            for page in range(1, 6):
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -130,14 +130,14 @@ class ExampleSpider(scrapy.Spider):
                     {
                         "type": "wait_for_selector",
                         "selector": {"type": "xpath", "value": "//button[contains(text(), 'See all details')]"},
-                        "timeout": 45,
+                        "timeout": 55,
                     },
-                    {"type": "wait_for_event", "event": "stabilize", "seconds": 1},
+                    {"type": "wait_for_event", "event": "stabilize", "seconds": 10},
                     {
                         "type": "click",
                         "selector": {"type": "xpath", "value": "//button[contains(text(), 'See all details')]"}
                     },
-                    {"type": "wait_for_event", "event": "stabilize", "seconds": 5}
+                    {"type": "wait_for_event", "event": "stabilize", "seconds": 10}
                 ]
 
 
@@ -378,8 +378,8 @@ class ExampleSpider(scrapy.Spider):
     # ---- Scrapy settings kept simple; DB pipeline is in db_pipeline.py ----
     custom_settings = {
         # Throughput
-        "CONCURRENT_REQUESTS": 20,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
+        "CONCURRENT_REQUESTS": 15,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 15,
         "DOWNLOAD_TIMEOUT": 300,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)
@@ -388,7 +388,7 @@ class ExampleSpider(scrapy.Spider):
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418,],
 
         # DB pipeline
-        "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+        "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300},
 
         # Logs
         "LOG_ENABLED": True,

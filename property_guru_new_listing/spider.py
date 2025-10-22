@@ -83,7 +83,7 @@ class ExampleSpider(scrapy.Spider):
             state = src["state"]
             tpl = src["url_template"]
 
-            for page in range(1, 11):         # Integrate page number here
+            for page in range(1, 8):         # Integrate page number here
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(

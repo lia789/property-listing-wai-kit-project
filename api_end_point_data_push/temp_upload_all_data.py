@@ -1,12 +1,12 @@
-import os
-import re
-import time
-import datetime
-import requests
-import pymysql
-from dotenv import load_dotenv
-from decimal import Decimal
-# from datetime import datetime, date
+# import os
+# import re
+# import time
+# import datetime
+# import requests
+# import pymysql
+# from dotenv import load_dotenv
+# from decimal import Decimal
+# # from datetime import datetime, date
 
 
 
@@ -186,6 +186,9 @@ from decimal import Decimal
 #     charset="utf8mb4"
 # )
 
+
+
+
 # try:
 #     cursor = connection.cursor()
 
@@ -207,16 +210,40 @@ from decimal import Decimal
 #         ORDER BY list_id ASC
 #     """
 
+
+#     iproperty_auction_sql = """
+#         SELECT
+#             list_id, name, url, area, state, price, bed_rooms,bath, built_up_size,
+#             posted_date, tenure, property_type, lat, lng
+#         FROM `iproperty-auction-listing`
+#         WHERE (api_update_status IS NULL OR api_update_status = 0)
+#         ORDER BY list_id ASC
+#     """
+
+
+
 #     cursor.execute(iproperty_sql)
 #     iproperty_rows = cursor.fetchall()
 
 #     cursor.execute(property_guru_sql)
 #     property_guru_rows = cursor.fetchall()
 
+#     cursor.execute(iproperty_auction_sql)
+#     iproperty_auction_rows = cursor.fetchall()
+
+
+
+
+
 #     # Console + log summary of fetched
 #     print(f"Fetched (no date filter): iproperty={len(iproperty_rows)}, prop-guru={len(property_guru_rows)}", flush=True)
 #     log_status(f"Fetched {len(iproperty_rows)} rows from iproperty-new-listing (no date filter).")
 #     log_status(f"Fetched {len(property_guru_rows)} rows from property-guru-new-listing (no date filter).")
+#     log_status(f"Fetched {len(iproperty_auction_rows)} rows from iproperty-auction-listing (no date filter).")
+
+
+    
+
 
 #     # LIVE counters
 #     to_send = 0       # valid rows (will be sent)
@@ -278,29 +305,85 @@ from decimal import Decimal
 #         print(f"Live => to_send:{to_send} success:{success} fail:{fail} skipped:{skipped}", flush=True)
 #         time.sleep(per_request_delay)
 
+
+
 #     # ── Process property-guru-new-listing rows
-#     for row in property_guru_rows:
-#         table_label = "prop-guru"
+#     # for row in property_guru_rows:
+#     #     table_label = "prop-guru"
+#     #     list_id = row["list_id"]
+#     #     name = (row["name"] or "").strip()
+
+#     #     payload = {
+#     #         "property_name":   name,
+#     #         "listing_url":     (row["url"] or "").strip(),
+#     #         "area":            (row["area"] or "").strip(),
+#     #         "listing_date":    clean_posted_date(row["posted_date"]),
+#     #         "state":           (row["state"] or "").strip(),
+#     #         "price":           to_float_or_zero(row["price"]),      # default 0.0 if missing/blank
+#     #         "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
+#     #         "no_of_bathroom":  to_float_or_none(row["bath"]),
+#     #         "no_of_carpark":   None,
+#     #         "size":            to_float_or_none(row["built_up_size"]),
+#     #         "property_tenure": clean_property_tenure(row["tenure"]),
+#     #         "property_type":   normalize_property_type(row["property_type"]),
+#     #         # STANDARD mapping: lng -> longitude, lat -> latitude
+#     #         "longitude":       to_float_or_none(row["lng"]),
+#     #         "latitude":        to_float_or_none(row["lat"]),
+#     #         "type":            "subsale"
+#     #     }
+
+#     #     ok, missing, invalid = validate_payload(payload)
+#     #     if not ok:
+#     #         skipped += 1
+#     #         msg = f"[{table_label}] list_id={list_id} name='{name}' SKIPPED missing={missing} invalid={invalid}"
+#     #         log_status(msg)
+#     #         print(msg, flush=True)
+#     #         print(f"Live => to_send:{to_send} success:{success} fail:{fail} skipped:{skipped}", flush=True)
+#     #         continue
+
+#     #     to_send += 1
+#     #     ok_post = send_api_request(payload, table_label, list_id, name)
+#     #     if ok_post:
+#     #         success += 1
+#     #         cursor.execute(
+#     #             "UPDATE `property-guru-new-listing` SET api_update_status = 1 WHERE list_id = %s",
+#     #             (list_id,)
+#     #         )
+#     #         connection.commit()
+#     #     else:
+#     #         fail += 1
+#     #         log_status(f"[{table_label}] list_id={list_id} name='{name}' Giving up after retries")
+
+#     #     print(f"Live => to_send:{to_send} success:{success} fail:{fail} skipped:{skipped}", flush=True)
+#     #     time.sleep(per_request_delay)
+
+
+
+
+
+#     # ── Process iproperty-auction-listing rows
+#     for row in iproperty_auction_rows:
+#         table_label = "iproperty-auction"
 #         list_id = row["list_id"]
 #         name = (row["name"] or "").strip()
 
 #         payload = {
 #             "property_name":   name,
 #             "listing_url":     (row["url"] or "").strip(),
-#             "area":            (row["area"] or "").strip(),
 #             "listing_date":    clean_posted_date(row["posted_date"]),
+#             "area":            (row["area"] or "").strip(),
 #             "state":           (row["state"] or "").strip(),
-#             "price":           to_float_or_zero(row["price"]),      # default 0.0 if missing/blank
+#             "price":           to_float_or_zero(row["price"]),      # <-- default 0.0 if missing/blank
 #             "no_of_bedroom":   to_float_or_none(row["bed_rooms"]),
 #             "no_of_bathroom":  to_float_or_none(row["bath"]),
-#             "no_of_carpark":   None,
+#             "no_of_carpark":   None,  # not in DB
 #             "size":            to_float_or_none(row["built_up_size"]),
 #             "property_tenure": clean_property_tenure(row["tenure"]),
 #             "property_type":   normalize_property_type(row["property_type"]),
 #             # STANDARD mapping: lng -> longitude, lat -> latitude
 #             "longitude":       to_float_or_none(row["lng"]),
 #             "latitude":        to_float_or_none(row["lat"]),
-#             "type":            "subsale"
+#             "type":            "auction"
 #         }
 
 #         ok, missing, invalid = validate_payload(payload)
@@ -317,7 +400,7 @@ from decimal import Decimal
 #         if ok_post:
 #             success += 1
 #             cursor.execute(
-#                 "UPDATE `property-guru-new-listing` SET api_update_status = 1 WHERE list_id = %s",
+#                 "UPDATE `iproperty-auction-listing` SET api_update_status = 1 WHERE list_id = %s",
 #                 (list_id,)
 #             )
 #             connection.commit()
@@ -327,6 +410,13 @@ from decimal import Decimal
 
 #         print(f"Live => to_send:{to_send} success:{success} fail:{fail} skipped:{skipped}", flush=True)
 #         time.sleep(per_request_delay)
+
+
+
+
+
+
+
 
 #     # Final console summary
 #     print("="*60, flush=True)
