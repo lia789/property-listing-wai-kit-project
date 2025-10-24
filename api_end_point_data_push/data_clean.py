@@ -145,7 +145,7 @@ def clean_bed_rooms(value, *, clamp=False):
 
     # special case
     if n == 100:
-        return 1
+        return 100
 
     if clamp:
         if n < 1:
