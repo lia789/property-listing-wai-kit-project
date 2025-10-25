@@ -254,3 +254,72 @@ def auction_date_clean(value):
         return dt.isoformat()
     except ValueError:
         return None
+
+
+
+import re
+
+# Canonical names (Malaysia)
+_CANONICAL_STATES = {
+    "kualalumpur": "Kuala Lumpur",
+    "wpkl": "Kuala Lumpur",
+    "wilayahpersekutuankualalumpur": "Kuala Lumpur",
+
+    "putrajaya": "Putrajaya",
+    "labuan": "Labuan",
+
+    "johor": "Johor",
+    "kedah": "Kedah",
+    "kelantan": "Kelantan",
+    "melaka": "Melaka",       # a.k.a. Malacca
+    "malacca": "Melaka",
+    "negerisembilan": "Negeri Sembilan",
+    "pahang": "Pahang",
+    "pulaupinang": "Pulau Pinang",
+    "penang": "Pulau Pinang",
+    "perak": "Perak",
+    "perlis": "Perlis",
+    "selangor": "Selangor",
+    "terengganu": "Terengganu",
+    "sabah": "Sabah",
+    "sarawak": "Sarawak",
+}
+
+def clean_state(value):
+    """
+    Normalize Malaysian 'state' names.
+    - Converts dashes/underscores to spaces
+    - Removes 'WP', 'W.P.', 'Wilayah Persekutuan' prefixes
+    - Maps common aliases to canonical casing
+    - Falls back to Title Case
+    Returns None for blank/None.
+
+    Examples:
+      "Kuala-Lumpur" -> "Kuala Lumpur"
+      "WP Kuala_Lumpur" -> "Kuala Lumpur"
+      "penang" -> "Pulau Pinang"
+      "Malacca" -> "Melaka"
+    """
+    if value is None:
+        return None
+
+    s = str(value).strip()
+    if not s:
+        return None
+
+    # Remove common federal territory prefixes
+    s = re.sub(r"\b(w\.?p\.?|wilayah\s+persekutuan)\b", "", s, flags=re.I)
+
+    # Unify separators to spaces
+    s = re.sub(r"[-_/.,]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    if not s:
+        return None
+
+    # Canonical mapping by compact lowercase key
+    key = re.sub(r"\s+", "", s).lower()
+    if key in _CANONICAL_STATES:
+        return _CANONICAL_STATES[key]
+
+    # Fallback: Title Case (keeps multi-word like "Negeri Sembilan")
+    return s.title()

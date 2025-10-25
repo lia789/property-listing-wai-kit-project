@@ -6,7 +6,7 @@ import requests
 import pymysql
 from dotenv import load_dotenv
 from decimal import Decimal
-from data_clean import clean_property_tenure, clean_posted_date, normalize_property_type, is_blank, to_float_or_none, to_float_or_zero, to_jsonable, clean_bed_rooms, auction_date_clean
+from data_clean import clean_property_tenure, clean_posted_date, normalize_property_type, is_blank, to_float_or_none, to_float_or_zero, to_jsonable, clean_bed_rooms, auction_date_clean, clean_state
 import json
 
 
@@ -481,7 +481,7 @@ try:
             "listing_date":    clean_posted_date(row["posted_date"]),
             "auction_date":    auction_date_clean(row["auction_date"]),
             "area":            (row["area"] or "").strip(),
-            "state":           (row["state"] or "").strip(),
+            "state":           clean_state((row["state"] or "").strip()),
             "price":           to_float_or_zero(row["price"]),
             "no_of_bedroom":   clean_bed_rooms(row["bed_rooms"]),
             "no_of_bathroom":  to_float_or_none(row["bath"]),
