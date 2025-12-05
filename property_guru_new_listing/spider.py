@@ -83,7 +83,7 @@ class ExampleSpider(scrapy.Spider):
             state = src["state"]
             tpl = src["url_template"]
 
-            for page in range(1, 8):         # Integrate page number here
+            for page in range(1, 60):         # Integrate page number here
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -107,11 +107,14 @@ class ExampleSpider(scrapy.Spider):
 
     # ---- Pagination page -> enqueue each listing ----
     def parse_pagination(self, response: scrapy.http.Response):
-        listing_card_root = response.xpath("//div[@class='search-result-root']/div[@class='listing-card-banner-root']")
+        # listing_card_root = response.xpath("//div[@class='search-result-root']/div[@class='listing-card-banner-root']")
+        listing_card_root = response.xpath("//div[@class='search-result-root']/div")
+
+
 
         for listing_card_link in listing_card_root:
-            url = listing_card_link.xpath(".//a[@class='listing-card-link']/@href").get()
-            
+            # url = listing_card_link.xpath(".//a[@class='listing-card-link']/@href").get()
+            url = listing_card_link.xpath(".//a[contains(@href, 'https://www.propertyguru.com.my/property-listing/')]/@href").get()
 
             # Sending listing page request
             if url:
@@ -137,7 +140,8 @@ class ExampleSpider(scrapy.Spider):
 
                 det_headers = {
                     "x-sapi-render": "true",
-                    "x-sapi-premium": "true",
+                    # "x-sapi-premium": "true",
+                    "x-sapi-ultra_premium": "true",
                     "x-sapi-instruction_set": json.dumps(det_instr),
                     "x-sapi-device_type": "desktop",
                     "x-sapi-retry_404": "true",
@@ -261,8 +265,6 @@ class ExampleSpider(scrapy.Spider):
         }
 
         yield item_dic
-
-
 
 
 
