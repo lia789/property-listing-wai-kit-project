@@ -83,7 +83,7 @@ class ExampleSpider(scrapy.Spider):
             state = src["state"]
             tpl = src["url_template"]
 
-            for page in range(1, 60):         # Integrate page number here
+            for page in range(1, 100):         # Integrate page number here
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -139,10 +139,10 @@ class ExampleSpider(scrapy.Spider):
 
 
                 det_headers = {
-                    "x-sapi-render": "true",
+                    # "x-sapi-render": "true",
                     # "x-sapi-premium": "true",
                     "x-sapi-ultra_premium": "true",
-                    "x-sapi-instruction_set": json.dumps(det_instr),
+                    # "x-sapi-instruction_set": json.dumps(det_instr),
                     "x-sapi-device_type": "desktop",
                     "x-sapi-retry_404": "true",
                     
@@ -183,13 +183,37 @@ class ExampleSpider(scrapy.Spider):
         bed_rooms = clean_bedrooms(response.xpath("normalize-space(//div[@da-id='bedroom-amenity']/p/text())").get())
         built_up_size = clean_int_float(response.xpath("normalize-space(//div[@da-id='area-amenity']/p/text())").get())
         posted_date = clean_posted_date(response.xpath("//div[contains(text(), 'Listed on')]/text()").get())
+        
         tenure = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/calendar-days-o.svg']/following-sibling::p[1]/text()").get()
+        if not tenure:
+            tenure = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/calendar-days-o.svg']/../div/text()").get()
+
+
+
+
+
+        
         furnished_status = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/furnished-o.svg']/following-sibling::p[1]/text()").get()
+        if not furnished_status:
+            furnished_status = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/furnished-o.svg']/../div/text()").get()
+        
+        
         property_type = clean_property_type(response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/home-open-o.svg']/following-sibling::p[1]/text()").get())
-        property_title_type = clean_property_title_type(response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/asterisk-o.svg']/../p[contains(text(), 'title')]/text()").get())
-        bumi_lot = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/asterisk-o.svg']/../p[contains(text(), 'Bumi Lot')]/text()").get()
-        built_up_price = clean_built_up_price(response.xpath("//div[@da-id='psf-amenity']//p/text()[2]").get())
+        if not property_type:
+            property_type = clean_property_type(response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/home-open-o.svg']/../div/text()").get())
+
+
+
+
+        # They will not have data
+        property_title_type = clean_property_title_type(response.xpath("//p[contains(text(), 'title')]/text()").get())
+        bumi_lot = response.xpath("//p[contains(text(), 'Bumi Lot')]/text()").get()
         occupancy = response.xpath("//img[@src='https://cdn.pgimgs.com/hive-ui-core/static/v1.6/icons/svgs/people-behind-o.svg']/following-sibling::p[1]/text()").get()
+        # ======
+        
+        
+        built_up_price = clean_built_up_price(response.xpath("//div[@da-id='psf-amenity']//p/text()[2]").get())
+        
         lat, lng = extract_lat_lng(response)
 
         # Description scraping
@@ -241,12 +265,12 @@ class ExampleSpider(scrapy.Spider):
             "tenure": tenure,
             "furnished_status": furnished_status,
             "property_type": property_type,
-            # "land_title": land_title,
+                       # "land_title": land_title,
             "property_title_type": property_title_type,
             "bumi_lot": bumi_lot,
             "built_up_price": built_up_price,
             "occupancy": occupancy,
-            # "unit_type": unit_type,
+                        # "unit_type": unit_type,
             "lat": lat,
             "lng": lng,
             "description": description,
@@ -271,6 +295,7 @@ class ExampleSpider(scrapy.Spider):
 
 
 
+
     # ---- Scrapy settings kept simple; DB pipeline is in db_pipeline.py ----
     custom_settings = {
         # Throughput
@@ -284,7 +309,7 @@ class ExampleSpider(scrapy.Spider):
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418,],
 
         # DB pipeline
-        "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+        # "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
 
 
         # Logs
