@@ -2,7 +2,7 @@ from __future__ import annotations
 import re
 from typing import Optional, Tuple
 from urllib.parse import urlparse, unquote
-
+from datetime import datetime
 
 
 
@@ -107,6 +107,29 @@ def analyze_description(description: Optional[str]) -> dict:
         "below_market_value": flag(below_market_keywords),
         "urgent": flag(urgent_sales_keywords),
     }
+
+
+
+
+def clean_price(price: Optional[str]) -> Optional[int]:
+    if price is None:
+        return None
+    
+    # Remove "RM" and any spaces, and then remove commas for better processing
+    price = price.strip().replace("RM", "").replace(",", "").strip()
+
+    # If the price contains a range, split by " - " and take the first part
+    if " - " in price:
+        price = price.split(" - ")[0].strip()
+
+    # Try to convert the price to an integer. If it fails, return None
+    try:
+        return int(price)
+    except ValueError:
+        return None
+
+
+
 
 
 
@@ -364,6 +387,64 @@ def clean_auction_date_iso(text: Optional[str], day_first: bool = True) -> Optio
     return None
 
 
+def built_up_price_data_clean(price_str):
+
+    try:
+        if price_str is None:
+            # Return None if the input is None
+            return None
+        
+        # Remove leading/trailing whitespace and check if the string is empty
+        price_str = price_str.strip()
+        if not price_str:
+            return None
+        
+        # Remove non-numeric characters (e.g., 'RM' or currency symbols)
+        price_str = ''.join(c for c in price_str if c.isdigit() or c == '.')
+        
+        # Check if the resulting string is a valid number
+        if price_str and price_str.replace('.', '', 1).isdigit():
+            # Convert the cleaned string to a float
+            return float(price_str)
+        else:
+            return None
+
+    except Exception:
+        return None
+    
+
+
+
+def clean_auction_date(date_str):
+    # Check if input is None or an empty string
+    if not date_str or date_str == "None":
+        return None
+
+    # Remove the 'Auction' part and strip any extra spaces
+    date_str = date_str.replace("Auction", "").strip()
+
+    # Map of month abbreviations
+    month_map = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05',
+        'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10',
+        'Nov': '11', 'Dec': '12'
+    }
+
+    # Get current year
+    current_year = datetime.now().year
+
+    # Split the input string to extract day and month abbreviation
+    day, month_abbr = date_str.split()[1], date_str.split()[2]
+
+    # Convert the month abbreviation to numeric format
+    month = month_map.get(month_abbr, '01')  # Default to January if month is invalid
+
+    # Create a date in the format YYYY-MM-DD
+    cleaned_date = f"{current_year}-{month}-{day.zfill(2)}"
+    
+    # Return the cleaned date
+    return cleaned_date
+
 
 
 # --- Module export surface -----------------------------------------------------
@@ -384,6 +465,9 @@ __all__ = [
     "clean_property_title_type",
     "extract_lat_lng_from_script",
     "clean_auction_date_iso",
+    "clean_price",
+    "built_up_price_data_clean",
+    "clean_auction_date",
 
 
 ]
