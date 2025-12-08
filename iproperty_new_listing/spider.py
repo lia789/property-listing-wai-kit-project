@@ -15,6 +15,8 @@ from data_clean import (
     clean_property_type,
     clean_property_title_type,
     extract_lat_lng_from_script,
+    clean_price,
+    built_up_price_data_clean,
 )
 
 
@@ -78,7 +80,7 @@ class ExampleSpider(scrapy.Spider):
             tpl = src["url_template"]
 
 
-            for page in range(1, 6):
+            for page in range(1, 70):
                 time.sleep(0.01)
                 url = tpl.format(page=page)
                 yield scrapy.Request(
@@ -103,17 +105,23 @@ class ExampleSpider(scrapy.Spider):
     def parse_pagination(self, response: scrapy.http.Response):
         state = response.meta.get("state")
 
-        li_nodes = response.xpath("//ul[@data-test-id='listing-list']/li")
+        li_nodes = response.xpath("//div[contains(@class, 'search-result-root')]/div")
 
         for li in li_nodes:
-            href = li.xpath(".//a[@class='depth-listing-card-link']/@href").get()
+            href = li.xpath(".//a[contains(@href, '/property/')]/@href").get()
             url = urljoin(response.url, href) if href else None
-
-            area = split_area(li.xpath(".//div[contains(@class, 'AddressWrapper')]/text()").get())
-            price = clean_int_float(li.xpath(".//li[contains(@class, 'ListingPricestyle__ItemWrapper-etxdML')]/text()").get())
-            bed_rooms = clean_bedrooms(li.xpath(".//li[@class='ListingAttributesstyle__ListingAttrsFacilitiesItemWrapper-klELeo bvrUdi attributes-facilities-item-wrapper bedroom-facility']/text()").get())
             list_id = extract_list_id(url) if url else None
-            
+
+
+            area = split_area(li.xpath(".//p[contains(@class, 'listing-address')]/text()").get())
+            bed_rooms = clean_bedrooms(li.xpath(".//div[contains(@da-id, 'listing-card-v2-bedrooms')]//p/text()").get())
+
+            row_price = li.xpath(".//div[@class='listing-price']/text()").get()
+            price = clean_price(row_price)
+
+
+        
+
             # Sending listing page request
             if url:
                 preview = {
@@ -123,31 +131,42 @@ class ExampleSpider(scrapy.Spider):
                     "state": state,
                     "price": price,
                     "bed_rooms": bed_rooms,
+                    
                 }
 
 
+                
+                
                 instructions = [
+
                     {
-                        "type": "wait_for_selector",
-                        "selector": {"type": "xpath", "value": "//button[contains(text(), 'See all details')]"},
-                        "timeout": 55,
+                        "type": "wait",
+                        "value": 30,
                     },
-                    {"type": "wait_for_event", "event": "stabilize", "seconds": 10},
+
                     {
                         "type": "click",
-                        "selector": {"type": "xpath", "value": "//button[contains(text(), 'See all details')]"}
+                        "selector": {"type": "css", "value": "button[da-id='meta-table-see-more-btn']"},
                     },
-                    {"type": "wait_for_event", "event": "stabilize", "seconds": 10}
+
+                    
                 ]
 
 
-                # Detail pa"x-sapi-premium": "true",ge: wait for networkidle + static map image
+
+
+
                 det_headers = {
-                    "x-sapi-render": "true",
+                    # "x-sapi-ultra_premium": "true",
+                    # "x-sapi-render": "true",
                     "x-sapi-premium": "true",
-                    "x-sapi-instruction_set": json.dumps(instructions),
+                    
+                    # "x-sapi-instruction_set": json.dumps(instructions),
                     "x-sapi-device_type": "desktop",
+                    # "x-sapi-device_type": "mobile",
                     "x-sapi-retry_404": "true",
+                    # "screenshot": "true",
+                    # 'cache_control': 'no-cache',
                 }
 
 
@@ -181,9 +200,25 @@ class ExampleSpider(scrapy.Spider):
         name_row = response.xpath("normalize-space(//h1/text())").get()
         name = get_condo_name(name_row)
 
-        tenure = response.xpath("normalize-space(//div[contains(text(), 'Tenure')]/following-sibling::div[1]/text())").get()
+
+
+
+
+
+
+
+        tenure = response.xpath("normalize-space(//div[contains(text(), 'Leasehold')]/text())").get()
         if not tenure:
-            tenure = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'tenure')]/text()").get()
+            tenure = tenure = response.xpath("normalize-space(//div[contains(text(), 'Freehold')]/text())").get()
+        if not tenure:
+            tenure = tenure = response.xpath("normalize-space(//div[contains(text(), 'Private lease scheme')]/text())").get()
+
+
+
+
+
+
+
 
 
 
@@ -191,20 +226,49 @@ class ExampleSpider(scrapy.Spider):
         furnished_status = response.xpath("normalize-space(//div[contains(text(), 'Furnishing')]/following-sibling::div[1]/text())").get()
         if not furnished_status:
             furnished_status = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'furni')]/text()").get()
+        if not furnished_status:
+            furnished_status = response.xpath("//p[contains(text(), 'furnished')]/text()").get()
+        if not furnished_status:
+            furnished_status = response.xpath("//div[contains(text(), 'furnished')]/text()").get()
+
 
 
 
         property_type = response.xpath("normalize-space(//div[contains(text(), 'Property type')]/following-sibling::div[1]/text())").get()
         if not property_type:
             property_type = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'for sale')]/text()").get()
+        if not property_type:
+            property_type = response.xpath("//p[contains(text(), 'for sale')]/text()").get()
+        if not property_type:
+            property_type = response.xpath("//div[contains(text(), 'for sale')]/text()").get()
+
+
+    
+
+
+
 
 
         land_title = response.xpath("normalize-space(//div[contains(text(), 'Land title')]/following-sibling::div[1]/text())").get()
+        if not land_title:
+            land_title = response.xpath("//p[contains(text(), 'Land title')]/text()").get()
+        if not land_title:
+            land_title = response.xpath("//div[contains(text(), 'Land title')]/text()").get()
 
+
+
+
+        property_title_type = response.xpath("//div[contains(text(), 'title')]/text()").get() ####
 
         property_title_type = response.xpath("normalize-space(//div[contains(text(), 'Property title type')]/following-sibling::div[1]/text())").get()
         if not property_title_type:
             property_title_type = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'title')]/text()").get()
+        if not property_title_type:
+            property_title_type = response.xpath("//p[contains(text(), 'title')]/text()").get()
+        if not property_title_type:
+            property_title_type = response.xpath("//div[contains(text(), 'title')]/text()").get()
+
+
 
 
 
@@ -212,8 +276,10 @@ class ExampleSpider(scrapy.Spider):
         bumi_lot = response.xpath("normalize-space(//div[contains(text(), 'Bumi lot')]/following-sibling::div[1]/text())").get()
         if not bumi_lot:
             bumi_lot = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'Bumi Lot')]/text()").get()
-
-
+        if not bumi_lot:
+            bumi_lot = response.xpath("//p[contains(text(), 'Bumi Lot')]/text()").get()
+        if not bumi_lot:
+            bumi_lot = response.xpath("//div[contains(text(), 'Bumi Lot')]/text()").get()
 
 
 
@@ -224,10 +290,7 @@ class ExampleSpider(scrapy.Spider):
 
 
 
-        built_up_price = response.xpath("normalize-space(//div[contains(text(), 'Built-up price')]/following-sibling::div[1]/text())").get()
-        if not built_up_price:
-            built_up_price = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'psf (floor)')]/text()").get()
-
+        built_up_price = response.xpath("normalize-space(//div[@da-id='amenity-price-psf']/p[@da-id='amenity-value']/text()[2])").get()
 
 
         occupancy = response.xpath("normalize-space(//div[contains(text(), 'Occupancy')]/following-sibling::div[1]/text())").get()
@@ -242,12 +305,50 @@ class ExampleSpider(scrapy.Spider):
 
 
 
+        if not occupancy:
+            occupancy = response.xpath("//p[contains(text(), 'occupied')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//p[contains(text(), 'enanted')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//p[contains(text(), 'tenanted')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//p[contains(text(), 'acant')]/text()").get()
+
+
+        if not occupancy:
+            occupancy = response.xpath("//div[contains(text(), 'occupied')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//div[contains(text(), 'enanted')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//div[contains(text(), 'tenanted')]/text()").get()
+        if not occupancy:
+            occupancy = response.xpath("//div[contains(text(), 'acant')]/text()").get()
+
+
+
+
+
+
+
         unit_type = response.xpath("normalize-space(//div[contains(text(), 'Unit type')]/following-sibling::div[1]/text())").get()
+        if not unit_type:
+            unit_type = response.xpath("//p[contains(text(), 'Unit type')]/text()").get()
+            
+        if not unit_type:
+            unit_type = response.xpath("//div[contains(text(), 'Unit type')]/text()").get()
+
+
 
 
         posted_date = response.xpath("normalize-space(//div[contains(text(), 'Posted date')]/following-sibling::div[1]/text())").get()
         if not posted_date:
             posted_date = response.xpath("//div[@class='property-modal-body-wrapper']//p[contains(text(), 'Listed on')]/text()").get()
+        if not posted_date:
+            posted_date = response.xpath("//p[contains(text(), 'Listed on')]/text()").get()
+
+        if not posted_date:
+            posted_date = response.xpath("//div[contains(text(), 'Listed on')]/text()").get()           
+
 
 
 
@@ -340,10 +441,16 @@ class ExampleSpider(scrapy.Spider):
             "property_type": clean_property_type(property_type),
             "land_title": land_title,
             "property_title_type": clean_property_title_type(property_title_type),
+            "property_title_type": property_title_type,
             "bumi_lot": bumi_lot,
-            "built_up_price": clean_int_float(built_up_price),
+            "built_up_price": built_up_price_data_clean(built_up_price),
             "occupancy": occupancy,
             "unit_type": unit_type,
+
+
+
+
+
             "lat": lat,
             "lng": lng,
             "description": description,
@@ -374,12 +481,11 @@ class ExampleSpider(scrapy.Spider):
 
 
 
-
     # ---- Scrapy settings kept simple; DB pipeline is in db_pipeline.py ----
     custom_settings = {
         # Throughput
-        "CONCURRENT_REQUESTS": 15,
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 15,
+        "CONCURRENT_REQUESTS": 20,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 20,
         "DOWNLOAD_TIMEOUT": 300,
 
         # Retry 10x on 500-class and 429 (matches your "retry 10 times" ask)

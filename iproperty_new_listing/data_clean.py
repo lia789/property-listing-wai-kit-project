@@ -111,35 +111,42 @@ def analyze_description(description: Optional[str]) -> dict:
 
 
 
+def _strip(value: str) -> str:
+    return value.strip() if value else ''
+
+
+
 
 def clean_bedrooms(bed_rooms: Optional[str], studio_value: int = STUDIO_SENTINEL) -> Optional[int]:
     if bed_rooms is None:
         return None
 
-    # primitives
+    # Handle primitive types like int or float directly
     if isinstance(bed_rooms, (int, float)) and not isinstance(bed_rooms, bool):
         try:
             return int(bed_rooms)
         except Exception:
             return None
 
+    # Strip leading/trailing spaces
     s = _strip(str(bed_rooms))
     if not s:
         return None
 
-    # take the first comma chunk as "bedrooms"
+    # Take the first comma-separated chunk as "bedrooms"
     first = s.split(",")[0].replace(" ", "").lower()
 
+    # If the value starts with 'studio', return the studio_value
     if first.startswith("studio"):
         return studio_value
 
-    # sum tokens split by '+', taking only pure digits
+    # Sum the tokens split by '+', taking only pure digits
     parts = re.split(r"\+", first)
     nums = [int(p) for p in parts if p.isdigit()]
     if nums:
         return sum(nums)
 
-    # fallback: first number anywhere
+    # Fallback: Find the first number anywhere in the string
     m = _NUM_RE.search(first)
     return int(float(m.group())) if m else None
 
@@ -176,7 +183,22 @@ def normalize_whitespace(text: Optional[str]) -> Optional[str]:
 
 
 
+def clean_price(price: Optional[str]) -> Optional[int]:
+    if price is None:
+        return None
+    
+    # Remove "RM" and any spaces, and then remove commas for better processing
+    price = price.strip().replace("RM", "").replace(",", "").strip()
 
+    # If the price contains a range, split by " - " and take the first part
+    if " - " in price:
+        price = price.split(" - ")[0].strip()
+
+    # Try to convert the price to an integer. If it fails, return None
+    try:
+        return int(price)
+    except ValueError:
+        return None
 
 
 
@@ -280,6 +302,30 @@ def extract_lat_lng_from_script(json_text):
 
 
 
+def built_up_price_data_clean(price_str):
+
+    try:
+        if price_str is None:
+            # Return None if the input is None
+            return None
+        
+        # Remove leading/trailing whitespace and check if the string is empty
+        price_str = price_str.strip()
+        if not price_str:
+            return None
+        
+        # Remove non-numeric characters (e.g., 'RM' or currency symbols)
+        price_str = ''.join(c for c in price_str if c.isdigit() or c == '.')
+        
+        # Check if the resulting string is a valid number
+        if price_str and price_str.replace('.', '', 1).isdigit():
+            # Convert the cleaned string to a float
+            return float(price_str)
+        else:
+            return None
+
+    except Exception:
+        return None
 
 
 
@@ -301,6 +347,7 @@ __all__ = [
     "clean_property_type",
     "clean_property_title_type",
     "extract_lat_lng_from_script",
+    "built_up_price_data_clean",
 
 
 ]
