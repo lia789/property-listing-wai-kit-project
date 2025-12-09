@@ -309,7 +309,7 @@ class ExampleSpider(scrapy.Spider):
         "RETRY_HTTP_CODES": [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 599, 418,],
 
         # DB pipeline
-        # "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
+        "ITEM_PIPELINES": {"db_pipeline.MySQLStorePipelineBatched": 300,},
 
 
         # Logs
